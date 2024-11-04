@@ -1,10 +1,10 @@
+// main.go
 package main
 
 import (
 	"fmt"
 	"parking/models"
 	"sync"
-	"time"
 )
 
 func main() {
@@ -16,9 +16,7 @@ func main() {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
-			estacionamiento.VehiculoEntra(id)
-			time.Sleep(1 * time.Second)
-			estacionamiento.VehiculoSale(id)
+			models.SimularCarro(id, estacionamiento)
 		}(i)
 	}
 
