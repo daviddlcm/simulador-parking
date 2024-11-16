@@ -1,30 +1,45 @@
 package views
 
 import (
+	"fmt"
+	"strconv"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
 )
 
-// ParkingView representa la vista del estacionamiento con solo la imagen de fondo
+// ParkingView representa la vista del estacionamiento
 type ParkingView struct {
 	Container *fyne.Container
+	Label     *widget.Label
 }
 
-// NewParkingView crea una vista de estacionamiento con solo la imagen de fondo
+// NewParkingView crea una vista del estacionamiento
 func NewParkingView() *ParkingView {
-	pv := &ParkingView{
-		Container: container.NewWithoutLayout(),
-	}
-
-	// Cargar la imagen de fondo desde el archivo
-	imagePath := "src/assets/parking-image.png"
-	backgroundImage := canvas.NewImageFromFile(imagePath)
+	// Crear el label para los espacios disponibles
+	label := widget.NewLabel("Espacios disponibles: 20/20")
+	// Crear la imagen de fondo
+	backgroundImage := canvas.NewImageFromFile("src/assets/parking-image.png")
 	backgroundImage.FillMode = canvas.ImageFillStretch
-	backgroundImage.Resize(fyne.NewSize(800, 600)) // Tamaño de la imagen como fondo
 
-	// Agregar la imagen de fondo al contenedor
-	pv.Container.Add(backgroundImage)
+	// Usar layout para asegurar que la imagen ocupe todo el espacio
+	// y colocar los elementos sobre ella (como el label)
+	container := container.NewMax(backgroundImage) // Este layout asegura que la imagen ocupe toda la pantalla
+	container.Add(label)                           // Agregar el label encima de la imagen
 
-	return pv
+	// Crear y retornar el ParkingView
+	return &ParkingView{
+		Container: container,
+		Label:     label,
+	}
+}
+
+// UpdateState actualiza el estado mostrado en la vista
+func (v *ParkingView) UpdateState(espaciosDisponibles, capacidad int) {
+	// Actualizar el texto del label
+	v.Label.SetText("Espacios disponibles: " + strconv.Itoa(espaciosDisponibles) + "/" + strconv.Itoa(capacidad))
+	// También puedes imprimir en consola si lo necesitas
+	fmt.Println("Espacios disponibles: " + strconv.Itoa(espaciosDisponibles) + "/" + strconv.Itoa(capacidad))
 }

@@ -1,37 +1,39 @@
 package scenes
 
 import (
+	"fmt"
+	"parking/src/models"
 	"parking/src/views"
-
-	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/container"
 )
 
-// MainScene representa la escena principal de la aplicación
+// MainScene representa la escena principal de la aplicación y actúa como observador
 type MainScene struct {
-	Window      fyne.Window
-	ParkingView *views.ParkingView
+	Parking *models.Estacionamiento
+	View    *views.ParkingView
 }
 
-// NewMainScene crea y configura la escena principal con la vista del estacionamiento
-func NewMainScene() *MainScene {
-	a := app.New() // Creamos la aplicación
-	win := a.NewWindow("Simulador de Parking")
-	parkingView := views.NewParkingView() // Creamos la vista con 20 espacios
-
-	// Contenedor principal
-	container := container.NewVBox(parkingView.Container)
-	win.SetContent(container)
-
-	return &MainScene{
-		Window:      win,
-		ParkingView: parkingView,
+// NewMainScene crea y configura la escena principal
+func NewMainScene(estacionamiento *models.Estacionamiento, view *views.ParkingView) *MainScene {
+	scene := &MainScene{
+		Parking: estacionamiento,
+		View:    view,
 	}
+	estacionamiento.RegistrarObservador(scene)
+	return scene
 }
 
-// Show muestra la escena principal
-func (s *MainScene) Show() {
-	s.Window.Resize(fyne.NewSize(800, 600))
-	s.Window.ShowAndRun()
+// OnVehiculoEntra maneja el evento de entrada de un vehículo
+func (s *MainScene) OnVehiculoEntra(id, cajon, espaciosDisponibles, capacidad int) {
+	fmt.Printf("Evento: Carro %d entró. Cajón: %d. Espacios disponibles: %d/%d\n",
+		id, cajon, espaciosDisponibles, capacidad)
+	// Actualizar la vista
+	s.View.UpdateState(espaciosDisponibles, capacidad)
+}
+
+// OnVehiculoSale maneja el evento de salida de un vehículo
+func (s *MainScene) OnVehiculoSale(id, cajon, espaciosDisponibles, capacidad int) {
+	fmt.Printf("Evento: Carro %d salió. Cajón: %d. Espacios disponibles: %d/%d\n",
+		id, cajon, espaciosDisponibles, capacidad)
+	// Actualizar la vista
+	s.View.UpdateState(espaciosDisponibles, capacidad)
 }
