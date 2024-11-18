@@ -27,7 +27,7 @@ func (s *MainScene) OnVehiculoEntra(id, cajon, espaciosDisponibles, capacidad in
 	fmt.Printf("Evento: Carro %d entró. Cajón: %d. Espacios disponibles: %d/%d\n",
 		id, cajon, espaciosDisponibles, capacidad)
 	// Actualizar la vista
-	s.View.UpdateState(espaciosDisponibles, capacidad)
+	s.View.UpdateState(espaciosDisponibles, capacidad, id, cajon, "entra")
 }
 
 // OnVehiculoSale maneja el evento de salida de un vehículo
@@ -35,5 +35,5 @@ func (s *MainScene) OnVehiculoSale(id, cajon, espaciosDisponibles, capacidad int
 	fmt.Printf("Evento: Carro %d salió. Cajón: %d. Espacios disponibles: %d/%d\n",
 		id, cajon, espaciosDisponibles, capacidad)
 	// Actualizar la vista
-	s.View.UpdateState(espaciosDisponibles, capacidad)
+	s.View.UpdateState(espaciosDisponibles, capacidad, id, cajon, "sale")
 }
