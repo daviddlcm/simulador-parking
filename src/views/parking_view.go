@@ -14,8 +14,10 @@ import (
 // ParkingView representa la vista del estacionamiento
 type ParkingView struct {
 	Container    *fyne.Container
+	Overlay      *fyne.Container // Contenedor para manejar los elementos visuales
 	Label        *widget.Label
 	parkingSpots []fyne.Position
+	slotRects    map[int]*canvas.Rectangle // Mapa para rastrear los rectángulos por slot
 }
 
 // NewParkingView crea una vista del estacionamiento
@@ -30,7 +32,6 @@ func NewParkingView() *ParkingView {
 	// Contenedor para el estacionamiento
 	overlay := container.NewWithoutLayout()
 	overlay.Resize(fyne.NewSize(800, 600)) // Ajusta el tamaño del overlay
-	overlay.Move(fyne.NewPos(0, 0))        // Posición inicial
 
 	// Ajustar las posiciones para que estén alineadas correctamente
 	parkingSpots := []fyne.Position{}
@@ -63,8 +64,42 @@ func NewParkingView() *ParkingView {
 
 	return &ParkingView{
 		Container:    container,
+		Overlay:      overlay,
 		Label:        label,
 		parkingSpots: parkingSpots,
+		slotRects:    make(map[int]*canvas.Rectangle), // Inicializar el mapa de slots
+	}
+}
+
+// DrawRedRectangle dibuja un rectángulo rojo en un slot específico
+func (v *ParkingView) DrawRedRectangle(x, y float32, slotID int) {
+	// Si ya existe un rectángulo en este slot, no hacer nada
+	if _, exists := v.slotRects[slotID]; exists {
+		return
+	}
+
+	// Crear un rectángulo rojo
+	rect := canvas.NewRectangle(color.RGBA{R: 255, G: 0, B: 0, A: 255}) // Rojo
+	rect.Resize(fyne.NewSize(30, 30))                                   // Tamaño del rectángulo
+	rect.Move(fyne.NewPos(x, y))                                        // Posición en la pantalla
+
+	// Añadir el rectángulo al contenedor overlay
+	v.Overlay.Add(rect)
+	v.slotRects[slotID] = rect // Guardar el rectángulo en el mapa
+	v.Overlay.Refresh()        // Refrescar la interfaz para mostrar el cambio
+}
+
+// RemoveRedRectangle elimina un rectángulo rojo en un slot específico
+func (v *ParkingView) RemoveRedRectangle(slotID int) {
+	// Validar que el slotID sea válido
+	if rect, exists := v.slotRects[slotID]; exists {
+		// Remover el rectángulo del contenedor overlay
+		v.Overlay.Remove(rect)
+		delete(v.slotRects, slotID) // Eliminar el rectángulo del mapa
+		v.Overlay.Refresh()         // Refrescar la interfaz para reflejar el cambio
+		fmt.Printf("Rectángulo eliminado del slot %d\n", slotID)
+	} else {
+		fmt.Printf("No se encontró un rectángulo en el slot %d\n", slotID)
 	}
 }
 
@@ -73,5 +108,12 @@ func (v *ParkingView) UpdateState(espaciosDisponibles, capacidad int, id, cajon 
 	// Actualizar el texto del label
 	v.Label.SetText("Espacios disponibles: " + strconv.Itoa(espaciosDisponibles) + "/" + strconv.Itoa(capacidad))
 	// También puedes imprimir en consola si lo necesitas
-	fmt.Println("Evento desde interfaz: Carro", id, "entró. Cajón:", cajon, "Espacios disponibles:", espaciosDisponibles, "/", capacidad)
+	fmt.Println("Evento desde interfaz: Carro", id, accion, ". Cajón:", cajon, "Espacios disponibles:", espaciosDisponibles, "/", capacidad)
+
+	// Dibujar o eliminar el rectángulo rojo en el slot correspondiente
+	if accion == "entra" {
+		v.DrawRedRectangle(v.parkingSpots[cajon-1].X, v.parkingSpots[cajon-1].Y, cajon)
+	} else if accion == "sale" {
+		v.RemoveRedRectangle(cajon)
+	}
 }

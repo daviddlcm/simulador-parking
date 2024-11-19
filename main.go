@@ -24,7 +24,7 @@ func main() {
 	mainWindow := myApp.NewWindow("Simulador de Parking")
 
 	// Configuración inicial del estacionamiento y la vista
-	estacionamiento := models.NewEstacionamiento(5)
+	estacionamiento := models.NewEstacionamiento(20)
 	parkingView := views.NewParkingView()
 
 	// Crear la escena principal
@@ -35,7 +35,7 @@ func main() {
 	mainWindow.SetContent(content)
 
 	// Ejecutar la simulación de carros en segundo plano
-	numCarros := 10
+	numCarros := 100
 	var wg sync.WaitGroup
 	rand.Seed(time.Now().UnixNano())
 
