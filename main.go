@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math"
 	"math/rand"
 	"parking/src/models"
 	"parking/src/scenes"
@@ -18,37 +19,38 @@ func funcionCarro(id int, estacionamiento *models.Estacionamiento, wg *sync.Wait
 	models.SimularCarro(id, estacionamiento)
 }
 
+func tiempoEntreLlegadasPoisson(lambda float64) time.Duration {
+	u := rand.Float64()
+	return time.Duration(-math.Log(1-u)/lambda) * time.Second
+}
+
+func generarVehiculos(numCarros int, lambda float64, estacionamiento *models.Estacionamiento, wg *sync.WaitGroup) {
+	for i := 1; i <= numCarros; i++ {
+		wg.Add(1)
+		go funcionCarro(i, estacionamiento, wg)
+		time.Sleep(tiempoEntreLlegadasPoisson(lambda))
+	}
+	wg.Wait()
+}
+
 func main() {
-	// Crear la aplicación Fyne
 	myApp := app.New()
 	mainWindow := myApp.NewWindow("Simulador de Parking")
 
-	// Configuración inicial del estacionamiento y la vista
 	estacionamiento := models.NewEstacionamiento(20)
 	parkingView := views.NewParkingView()
 
-	// Crear la escena principal
 	mainScene := scenes.NewMainScene(estacionamiento, parkingView)
 
-	// Configurar el contenido de la ventana con la vista
 	content := container.NewMax(parkingView.Container)
 	mainWindow.SetContent(content)
 
-	// Ejecutar la simulación de carros en segundo plano
 	numCarros := 100
 	var wg sync.WaitGroup
 	rand.Seed(time.Now().UnixNano())
 
-	go func() {
-		for i := 1; i <= numCarros; i++ {
-			wg.Add(1)
-			go funcionCarro(i, estacionamiento, &wg)
-			time.Sleep(time.Millisecond * 500) // Retraso entre entradas de carros
-		}
-		wg.Wait()
-	}()
+	go generarVehiculos(numCarros, 1.0, estacionamiento, &wg)
 
-	// Mostrar la interfaz gráfica
 	mainWindow.Resize(fyne.NewSize(800, 600))
 	mainWindow.ShowAndRun()
 	_ = mainScene

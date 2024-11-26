@@ -13,10 +13,9 @@ type Estacionamiento struct {
 	ocupados        int
 	cajonesLibres   []int
 	cajonOcupadoPor map[int]int
-	observadores    []Observer // Lista de observadores
+	observadores    []Observer
 }
 
-// NewEstacionamiento inicializa el estacionamiento con una capacidad dada
 func NewEstacionamiento(capacidad int) *Estacionamiento {
 	espacios := make(chan struct{}, capacidad)
 	entrada := make(chan struct{}, 1)
@@ -38,28 +37,24 @@ func NewEstacionamiento(capacidad int) *Estacionamiento {
 	}
 }
 
-// RegistrarObservador permite registrar un nuevo observador
 func (e *Estacionamiento) RegistrarObservador(o Observer) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	e.observadores = append(e.observadores, o)
 }
 
-// NotificarVehiculoEntra notifica a los observadores cuando un vehículo entra
 func (e *Estacionamiento) NotificarVehiculoEntra(id, cajon, espaciosDisponibles, capacidad int) {
 	for _, o := range e.observadores {
 		o.OnVehiculoEntra(id, cajon, espaciosDisponibles, capacidad)
 	}
 }
 
-// NotificarVehiculoSale notifica a los observadores cuando un vehículo sale
 func (e *Estacionamiento) NotificarVehiculoSale(id, cajon, espaciosDisponibles, capacidad int) {
 	for _, o := range e.observadores {
 		o.OnVehiculoSale(id, cajon, espaciosDisponibles, capacidad)
 	}
 }
 
-// VehiculoEntra simula la entrada de un vehículo al estacionamiento
 func (e *Estacionamiento) VehiculoEntra(id int) {
 	<-e.espacios
 	e.entrada <- struct{}{}
@@ -77,7 +72,6 @@ func (e *Estacionamiento) VehiculoEntra(id int) {
 	<-e.entrada
 }
 
-// VehiculoSale simula la salida de un vehículo del estacionamiento
 func (e *Estacionamiento) VehiculoSale(id int) {
 	e.entrada <- struct{}{}
 	fmt.Printf("Carro %d está saliendo del estacionamiento.\n", id)

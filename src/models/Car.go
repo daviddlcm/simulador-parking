@@ -6,7 +6,7 @@ import (
 )
 
 func SimularCarro(id int, estacionamiento *Estacionamiento) {
-	estacionamiento.VehiculoEntra(id) // Tiempo aleatorio entre 3 y 5 segundos dentro del estacionamiento
+	estacionamiento.VehiculoEntra(id)
 	tiempoEstacionado := time.Duration(3+rand.Intn(3)) * time.Second
 	//fmt.Printf("Carro %d estacionado por %v segundos\n", id, tiempoEstacionado.Seconds())
 	time.Sleep(tiempoEstacionado)
